@@ -1,6 +1,7 @@
 package com.samuelmonneh.backend;
 
 import com.samuelmonneh.backend.Model.UserModel;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -96,10 +97,12 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService(
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            @Value("${app.security.username}") String username,
+            @Value("${app.security.password}") String password) {
 
-        UserDetails user = User.withUsername("K2oWLuhC")
-                .password(passwordEncoder.encode("MHY5Mdxt2fspgpsHsTQKuh2HebBwc945F2Q1CZ0kh3EzWKLyw2D0EnNXpWBK"))
+        UserDetails user = User.withUsername(username)
+                .password(passwordEncoder.encode(password))
                 .roles("USER")
                 .build();
 
