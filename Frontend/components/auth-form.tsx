@@ -31,8 +31,8 @@ export function AuthForm({ initialMode }: { initialMode: Mode }) {
     const password = String(formData.get('password') ?? '')
 
     const endpoint = isSignup
-      ? 'http://localhost:8080/api/userservices/register'
-      : 'http://localhost:8080/api/userservices/login'
+      ? 'https://todoapplicationbackend-befs.onrender.com/api/userservices/register'
+      : 'https://todoapplicationbackend-befs.onrender.com/api/userservices/login'
 
     const requestBody = isSignup
       ? {
