@@ -56,12 +56,13 @@ public class SecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow your React / Next.js frontend
         configuration.setAllowedOrigins(
-                List.of("http://localhost:3000")
+                List.of(
+                        "http://localhost:3000",
+                        "https://klippstodo.vercel.app"
+                )
         );
 
-        // HTTP methods your frontend can use
         configuration.setAllowedMethods(
                 List.of(
                         "GET",
@@ -73,7 +74,6 @@ public class SecurityConfig {
                 )
         );
 
-        // Headers React is allowed to send
         configuration.setAllowedHeaders(
                 List.of(
                         "Authorization",
@@ -84,8 +84,10 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
 
-        // Apply this CORS configuration to every endpoint
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
 
         return source;
     }
