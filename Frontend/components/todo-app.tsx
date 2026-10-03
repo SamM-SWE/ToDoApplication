@@ -30,22 +30,10 @@ const getServerTodayKey = () => ''
 // API CONFIGURATION
 // ==================================================
 
-// TEMPORARY: local testing only.
-// Use the SAME Basic Auth credentials that work in Postman.
-const BASIC_AUTH_USERNAME =
-  process.env.AUTH_USERNAME!
 
-const BASIC_AUTH_PASSWORD =
-  process.env.AUTH_PASSWORD!
+const API_URL = '/api/backend'
 
-const API_URL =
-  'https://todoapplicationbackend-befs.onrender.com/api'
-
-const AUTH_HEADERS = {
-  Authorization:
-    'Basic ' +
-    btoa(`${BASIC_AUTH_USERNAME}:${BASIC_AUTH_PASSWORD}`),
-
+const JSON_HEADERS = {
   'Content-Type': 'application/json',
 }
 
@@ -165,7 +153,6 @@ export function TodoApp() {
           `${API_URL}/getNotes/${currentUser!.id}`,
           {
             method: 'GET',
-            headers: AUTH_HEADERS,
           }
         )
 
@@ -254,7 +241,7 @@ export function TodoApp() {
         {
           method: 'POST',
 
-          headers: AUTH_HEADERS,
+          headers: JSON_HEADERS,
 
           body: JSON.stringify(
             newNoteBody
@@ -336,7 +323,7 @@ export function TodoApp() {
         {
           method: 'PUT',
 
-          headers: AUTH_HEADERS,
+          headers: JSON_HEADERS,
 
           body: JSON.stringify({
             note: todo.title,
@@ -392,7 +379,6 @@ export function TodoApp() {
         `${API_URL}/deleteNote/${id}`,
         {
           method: 'DELETE',
-          headers: AUTH_HEADERS,
         }
       )
 
@@ -628,11 +614,13 @@ export function TodoApp() {
           </ul>
         ) : (
           <p className="py-12 text-center text-sm text-muted-foreground">
+
             {
               EMPTY_MESSAGES[
                 filter
               ]
             }
+
           </p>
         )}
 

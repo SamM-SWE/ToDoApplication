@@ -9,17 +9,6 @@ type Mode = 'login' | 'signup'
 const inputClass =
   'h-10 w-full rounded-md border border-input bg-transparent px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40'
 
-// TEMPORARY: local testing only.
-// These must be the SAME Basic Auth credentials that work in Postman.
-const BASIC_AUTH_USERNAME =
-  process.env.AUTH_USERNAME!
-
-const BASIC_AUTH_PASSWORD =
-  process.env.AUTH_PASSWORD!
-
-const API_URL =
-  'https://todoapplicationbackend-befs.onrender.com/api'
-
 export function AuthForm({
   initialMode,
 }: {
@@ -48,9 +37,11 @@ export function AuthForm({
       const email = String(formData.get('email') ?? '')
       const password = String(formData.get('password') ?? '')
 
+      // Call our Next.js server-side proxy.
+      // The browser no longer calls Render directly.
       const endpoint = isSignup
-        ? `${API_URL}/userservices/register`
-        : `${API_URL}/userservices/login`
+        ? '/api/backend/userservices/register'
+        : '/api/backend/userservices/login'
 
       const requestBody = isSignup
         ? {
@@ -63,11 +54,6 @@ export function AuthForm({
             password,
           }
 
-      // Spring Security Basic Authentication
-      const basicAuth = btoa(
-        `${BASIC_AUTH_USERNAME}:${BASIC_AUTH_PASSWORD}`
-      )
-
       console.log('Sending request to:', endpoint)
 
       const response = await fetch(endpoint, {
@@ -75,7 +61,6 @@ export function AuthForm({
 
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Basic ${basicAuth}`,
         },
 
         body: JSON.stringify(requestBody),
@@ -85,9 +70,7 @@ export function AuthForm({
 
       if (!response.ok) {
         if (response.status === 401) {
-          setError(
-            'Invalid username or password'
-          )
+          setError('Invalid username or password.')
         } else if (response.status === 400) {
           setError(
             'Please check the information you entered.'
@@ -107,10 +90,20 @@ export function AuthForm({
 
       const user = await response.json()
 
-      console.log('USER RETURNED FROM SPRING:', user)
-      console.log('USER ID RETURNED FROM SPRING:', user.id)
+      console.log(
+        'USER RETURNED FROM SPRING:',
+        user
+      )
 
-      if (user.id === undefined || user.id === null) {
+      console.log(
+        'USER ID RETURNED FROM SPRING:',
+        user.id
+      )
+
+      if (
+        user.id === undefined ||
+        user.id === null
+      ) {
         console.error(
           'Spring response does not contain an ID.'
         )
@@ -128,8 +121,10 @@ export function AuthForm({
         email: String(user.email ?? ''),
       }
 
+      // Remove old stored user
       localStorage.removeItem('klipss-user')
 
+      // Save current logged-in user
       localStorage.setItem(
         'klipss-user',
         JSON.stringify(userData)
@@ -142,9 +137,14 @@ export function AuthForm({
 
       router.push('/dashboard')
     } catch (error) {
-      console.error('Request failed:', error)
+      console.error(
+        'Request failed:',
+        error
+      )
 
-      setError('Unable to connect to the server.')
+      setError(
+        'Unable to connect to the server.'
+      )
     } finally {
       setPending(false)
     }
@@ -154,6 +154,7 @@ export function AuthForm({
     <div className="flex flex-col gap-6">
 
       <div className="flex flex-col gap-2 text-center">
+
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           {isSignup
             ? 'Create your account'
@@ -165,6 +166,7 @@ export function AuthForm({
             ? 'Start planning your days in seconds.'
             : 'Log in to see your tasks for today.'}
         </p>
+
       </div>
 
       <form
@@ -174,6 +176,7 @@ export function AuthForm({
 
         {isSignup && (
           <div className="flex flex-col gap-2">
+
             <label
               htmlFor="name"
               className="text-sm font-medium text-foreground"
@@ -190,10 +193,12 @@ export function AuthForm({
               placeholder="Ada Lovelace"
               className={inputClass}
             />
+
           </div>
         )}
 
         <div className="flex flex-col gap-2">
+
           <label
             htmlFor="email"
             className="text-sm font-medium text-foreground"
@@ -210,9 +215,11 @@ export function AuthForm({
             placeholder="you@example.com"
             className={inputClass}
           />
+
         </div>
 
         <div className="flex flex-col gap-2">
+
           <label
             htmlFor="password"
             className="text-sm font-medium text-foreground"
@@ -234,6 +241,7 @@ export function AuthForm({
             placeholder="Password"
             className={inputClass}
           />
+
         </div>
 
         {error && (
@@ -254,9 +262,11 @@ export function AuthForm({
               ? 'Create account'
               : 'Log in'}
         </Button>
+
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
+
         {isSignup
           ? 'Already have an account?'
           : 'New to Klipss?'}
@@ -280,6 +290,7 @@ export function AuthForm({
             ? 'Log in'
             : 'Create an account'}
         </button>
+
       </p>
 
     </div>
