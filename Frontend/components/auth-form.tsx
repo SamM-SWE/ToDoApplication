@@ -9,7 +9,22 @@ type Mode = 'login' | 'signup'
 const inputClass =
   'h-10 w-full rounded-md border border-input bg-transparent px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40'
 
-export function AuthForm({ initialMode }: { initialMode: Mode }) {
+// TEMPORARY: local testing only.
+// These must be the SAME Basic Auth credentials that work in Postman.
+const BASIC_AUTH_USERNAME =
+  process.env.NEXT_PUBLIC_BASIC_AUTH_USERNAME!
+
+const BASIC_AUTH_PASSWORD =
+  process.env.NEXT_PUBLIC_BASIC_AUTH_PASSWORD!
+
+const API_URL =
+  'https://todoapplicationbackend-befs.onrender.com/api'
+
+export function AuthForm({
+  initialMode,
+}: {
+  initialMode: Mode
+}) {
   const router = useRouter()
 
   const [mode, setMode] = useState<Mode>(initialMode)
@@ -18,54 +33,73 @@ export function AuthForm({ initialMode }: { initialMode: Mode }) {
 
   const isSignup = mode === 'signup'
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault()
 
     setPending(true)
     setError('')
 
-    const formData = new FormData(event.currentTarget)
-
-    const name = String(formData.get('name') ?? '')
-    const email = String(formData.get('email') ?? '')
-    const password = String(formData.get('password') ?? '')
-
-    const endpoint = isSignup
-      ? 'https://todoapplicationbackend-befs.onrender.com/api/userservices/register'
-      : 'https://todoapplicationbackend-befs.onrender.com/api/userservices/login'
-
-    const requestBody = isSignup
-      ? {
-          name,
-          email,
-          password,
-        }
-      : {
-          email,
-          password,
-        }
-
     try {
+      const formData = new FormData(event.currentTarget)
+
+      const name = String(formData.get('name') ?? '')
+      const email = String(formData.get('email') ?? '')
+      const password = String(formData.get('password') ?? '')
+
+      const endpoint = isSignup
+        ? `${API_URL}/userservices/register`
+        : `${API_URL}/userservices/login`
+
+      const requestBody = isSignup
+        ? {
+            name,
+            email,
+            password,
+          }
+        : {
+            email,
+            password,
+          }
+
+      // Spring Security Basic Authentication
+      const basicAuth = btoa(
+        `${BASIC_AUTH_USERNAME}:${BASIC_AUTH_PASSWORD}`
+      )
+
+      console.log('Sending request to:', endpoint)
+
       const response = await fetch(endpoint, {
         method: 'POST',
 
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Basic ' + btoa('user:root'),
+          Authorization: `Basic ${basicAuth}`,
         },
 
         body: JSON.stringify(requestBody),
       })
 
+      console.log('HTTP STATUS:', response.status)
+
       if (!response.ok) {
         if (response.status === 401) {
-          setError('Invalid email or password.')
+          setError(
+            'Invalid username or password'
+          )
         } else if (response.status === 400) {
-          setError('Please check the information you entered.')
+          setError(
+            'Please check the information you entered.'
+          )
         } else if (response.status === 500) {
-          setError('The server encountered an error.')
+          setError(
+            'The server encountered an error.'
+          )
         } else {
-          setError('Something went wrong. Please try again.')
+          setError(
+            `Request failed with status ${response.status}.`
+          )
         }
 
         return
@@ -76,11 +110,14 @@ export function AuthForm({ initialMode }: { initialMode: Mode }) {
       console.log('USER RETURNED FROM SPRING:', user)
       console.log('USER ID RETURNED FROM SPRING:', user.id)
 
-      // Make sure Spring actually returned an ID
       if (user.id === undefined || user.id === null) {
-        console.error('Spring response does not contain an ID.')
+        console.error(
+          'Spring response does not contain an ID.'
+        )
 
-        setError('Login succeeded, but user ID was not returned.')
+        setError(
+          'Login succeeded, but user ID was not returned.'
+        )
 
         return
       }
@@ -91,16 +128,13 @@ export function AuthForm({ initialMode }: { initialMode: Mode }) {
         email: String(user.email ?? ''),
       }
 
-      // Remove any old stored user
       localStorage.removeItem('klipss-user')
 
-      // Store the NEW user including their ID
       localStorage.setItem(
         'klipss-user',
         JSON.stringify(userData)
       )
 
-      // Verify it was stored
       console.log(
         'USER SAVED TO LOCAL STORAGE:',
         localStorage.getItem('klipss-user')
