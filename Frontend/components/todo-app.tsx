@@ -33,10 +33,10 @@ const getServerTodayKey = () => ''
 // TEMPORARY: local testing only.
 // Use the SAME Basic Auth credentials that work in Postman.
 const BASIC_AUTH_USERNAME =
-  process.env.NEXT_PUBLIC_BASIC_AUTH_USERNAME!
+  process.env.AUTH_USERNAME!
 
 const BASIC_AUTH_PASSWORD =
-  process.env.NEXT_PUBLIC_BASIC_AUTH_PASSWORD!
+  process.env.AUTH_PASSWORD!
 
 const API_URL =
   'https://todoapplicationbackend-befs.onrender.com/api'
